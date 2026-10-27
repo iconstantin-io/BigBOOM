@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &3252518125360857294
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6230903520284287194, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+      propertyPath: m_Name
+      value: Casella 4 Mines Destapada - Model2 Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565450691690482769, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1008.2019
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565450691690482769, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.00000035822075
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565450691690482769, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 999.6587
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565450691690482769, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565450691690482769, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565450691690482769, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565450691690482769, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565450691690482769, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565450691690482769, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565450691690482769, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects:
+    - {fileID: 5287301638673179759, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}

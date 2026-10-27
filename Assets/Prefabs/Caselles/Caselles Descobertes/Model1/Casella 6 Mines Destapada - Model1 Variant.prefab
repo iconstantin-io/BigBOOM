@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &7413884696574430480
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2292632199183528441, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1000.31934
+      objectReference: {fileID: 0}
+    - target: {fileID: 2292632199183528441, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.00000009521068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2292632199183528441, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 999.6555
+      objectReference: {fileID: 0}
+    - target: {fileID: 2292632199183528441, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2292632199183528441, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2292632199183528441, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2292632199183528441, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2292632199183528441, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2292632199183528441, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2292632199183528441, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6624442651782434887, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: m_Name
+      value: Casella 6 Mines Destapada - Model1 Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 8189213032791236595, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 3787123a5a2a040428e7ec84d30e0bd6, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}

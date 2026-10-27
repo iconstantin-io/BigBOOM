@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6041269911419300047
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3448277718414908059}
+  - component: {fileID: 5297923025367754819}
+  m_Layer: 0
+  m_Name: Taulell
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3448277718414908059
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6041269911419300047}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1000.202, y: -0, z: 999.42816}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5297923025367754819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6041269911419300047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79d0dedd041ac8f4498e61198e9d72cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GeneradorTaulell
+  tapadesModel1:
+    numeros:
+    - {fileID: 3070211878423893716, guid: 48429be055b3c7d44a2abfbbc328dc62, type: 3}
+    - {fileID: 5012442927195112783, guid: af2cb304787b4da4bb4159bfe2e4fd45, type: 3}
+    - {fileID: 2272877110002316243, guid: 5bdf750b25c46564ba9262c928b497cc, type: 3}
+    - {fileID: 806093422263040556, guid: 4d43873127ebd8b4ca3fcc5c628cd99d, type: 3}
+    - {fileID: 6641610544181185462, guid: 762d0a7e3f7570b4f91a5786ba5236bc, type: 3}
+    - {fileID: 2305936633026754652, guid: e6abff0c35b19b64bb2377ab78e622be, type: 3}
+    - {fileID: 4780383924378337565, guid: f45fd816509baf2409799941e156c7e6, type: 3}
+    - {fileID: 7809895778801109904, guid: c4c6c15d00189154c83730f87a0e5038, type: 3}
+    - {fileID: 8258013326653211982, guid: 4cbf24b04f97e6844afa2a26b85cdfce, type: 3}
+    mina: {fileID: 4049796314189014606, guid: 88ae17c1a6be89f44a517ba2128e5645, type: 3}
+  tapadesModel2:
+    numeros:
+    - {fileID: 7825081332599826183, guid: 943a61bde911fcb43aa14e21f5fa0430, type: 3}
+    - {fileID: 2445566606325796629, guid: b840762ae544d7b428c1eb0d91bcc00a, type: 3}
+    - {fileID: 980568143680644130, guid: 4b9fbc70b9f2acc40af00cf1a826106f, type: 3}
+    - {fileID: 8812325450722217253, guid: faa345e6cd38a1546a10f6e3938e2578, type: 3}
+    - {fileID: 6230903520284287194, guid: 8e7d5f169f962ef4aa1fbd2c34aea187, type: 3}
+    - {fileID: 5729588355982123897, guid: 1f501f8687b243c41afab97b5b383464, type: 3}
+    - {fileID: 2759436891616563656, guid: edf6610c846799e45854a4a017716a07, type: 3}
+    - {fileID: 990801412492032908, guid: 4f1d868bcab36bb4b861a35e42b3b194, type: 3}
+    - {fileID: 4808416386000724853, guid: c3d6a84928f464447a9f435be49885c8, type: 3}
+    mina: {fileID: 9060592466657161437, guid: 4e6183a0009b42a4ebfd38023df2393f, type: 3}
+  descobertesModel1:
+    numeros:
+    - {fileID: 1565805388821958110, guid: 1846fe2c60f430341bbb82de534470ee, type: 3}
+    - {fileID: 5498928797947841833, guid: 2c1bf9c4ba8ebb4448e9af1c3778cb57, type: 3}
+    - {fileID: 5243793663746754624, guid: 13626f16dbae4644da68d6662b269707, type: 3}
+    - {fileID: 4198495265397189428, guid: 1ad6e5a952adab344b2c31d94760da9d, type: 3}
+    - {fileID: 1629833864933953156, guid: 9edaa31eff2cb564692ef454edd74d86, type: 3}
+    - {fileID: 4590439722997702594, guid: eb05d07f278a38c469103d24c830b517, type: 3}
+    - {fileID: 4399409525811469655, guid: c39622a7f94ad7b4aa2cf4074a47e288, type: 3}
+    - {fileID: 6065072866585717772, guid: 7e83595c0fce03f418fada22163a172c, type: 3}
+    - {fileID: 3355963221579268332, guid: cebc971b9cb46ca43b174e06c2dbf27e, type: 3}
+    mina: {fileID: 7139776975705691279, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
+  descobertesModel2:
+    numeros:
+    - {fileID: 9162460668041851033, guid: 7b73214c5a011f3448babf6b1038668c, type: 3}
+    - {fileID: 4584230280288921393, guid: d614d08e0ec42774ab055d06c59c789f, type: 3}
+    - {fileID: 6139323488538060876, guid: fb1bb102787e4e24298d8dd7c975ae53, type: 3}
+    - {fileID: 674691668155113868, guid: 13cb716adc1909a4a8608dc2f3cda4c1, type: 3}
+    - {fileID: 1629833864933953156, guid: 9edaa31eff2cb564692ef454edd74d86, type: 3}
+    - {fileID: 4590439722997702594, guid: eb05d07f278a38c469103d24c830b517, type: 3}
+    - {fileID: 4399409525811469655, guid: c39622a7f94ad7b4aa2cf4074a47e288, type: 3}
+    - {fileID: 6065072866585717772, guid: 7e83595c0fce03f418fada22163a172c, type: 3}
+    - {fileID: 3355963221579268332, guid: cebc971b9cb46ca43b174e06c2dbf27e, type: 3}
+    mina: {fileID: 9162460668041851033, guid: 7b73214c5a011f3448babf6b1038668c, type: 3}
+  mida: 2
+  obrirZonaInicial: 1
+  llavor: 0
