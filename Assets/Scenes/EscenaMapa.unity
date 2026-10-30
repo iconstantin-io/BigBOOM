@@ -2769,7 +2769,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8242b18fc7252af44a453bcfefda7e7c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8242b18fc7252af44a453bcfefda7e7c, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2869,6 +2869,8 @@ MonoBehaviour:
   jumpForce: 5
   gravity: -18
   girarAmbTeclat: 1
+  relatiuCamera: 0
+  referenciaCamera: {fileID: 0}
 --- !u!1001 &69999211
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -50791,6 +50793,8 @@ MonoBehaviour:
   abast: 0
   jugadorActiu: {fileID: 0}
   colocarCamera: 1
+  vistaZenital: 1
+  margeZenital: 1.2
   posicioCamera: {x: -60, y: 50, z: 15}
   alturaMirada: 12
   prefabBandera: {fileID: 0}
