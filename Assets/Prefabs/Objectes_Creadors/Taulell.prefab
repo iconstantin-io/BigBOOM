@@ -86,12 +86,12 @@ MonoBehaviour:
     - {fileID: 4584230280288921393, guid: d614d08e0ec42774ab055d06c59c789f, type: 3}
     - {fileID: 6139323488538060876, guid: fb1bb102787e4e24298d8dd7c975ae53, type: 3}
     - {fileID: 674691668155113868, guid: 13cb716adc1909a4a8608dc2f3cda4c1, type: 3}
-    - {fileID: 1629833864933953156, guid: 9edaa31eff2cb564692ef454edd74d86, type: 3}
-    - {fileID: 4590439722997702594, guid: eb05d07f278a38c469103d24c830b517, type: 3}
-    - {fileID: 4399409525811469655, guid: c39622a7f94ad7b4aa2cf4074a47e288, type: 3}
-    - {fileID: 6065072866585717772, guid: 7e83595c0fce03f418fada22163a172c, type: 3}
-    - {fileID: 3355963221579268332, guid: cebc971b9cb46ca43b174e06c2dbf27e, type: 3}
-    mina: {fileID: 9162460668041851033, guid: 7b73214c5a011f3448babf6b1038668c, type: 3}
+    - {fileID: 8888937698335776788, guid: e514949c68628f94b888ba62dbf47976, type: 3}
+    - {fileID: 6986559632569278431, guid: 51db10aa891b9ac4aaed653a1072f64e, type: 3}
+    - {fileID: 6624442651782434887, guid: f4adc26b0fb365c4eaf69d32b5a6ef93, type: 3}
+    - {fileID: 1071528268791080864, guid: 86b9add089db4df4a88ee9ca9b99c2cd, type: 3}
+    - {fileID: 7592747984407350226, guid: b69d4453e50ff6c4facacf19574ed968, type: 3}
+    mina: {fileID: 4589506768031004606, guid: eeda6f275de9029468f00bb6c34a1f08, type: 3}
   mida: 2
   obrirZonaInicial: 1
   llavor: 0

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &2579390887818954733
+--- !u!1001 &6675637852892455729
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,25 +8,65 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 175264012423651091, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 1162305530836222128, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 3781722514663532495, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 5de8f8b675cc3094497d5277e93592eb, type: 2}
+    - target: {fileID: 3906895272045283188, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 4057657781113831202, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 4121718448434458166, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 4521210590313623629, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 5171394262672167951, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 6702295161036161530, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 6737947131734728451, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 7016056669809525145, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 7139776975705691279, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
       propertyPath: m_Name
-      value: Casella Mina Tapada - Model2 Variant
+      value: Casella Mina Destapada - Model2 Variant Variant
       objectReference: {fileID: 0}
     - target: {fileID: 7524308580068942005, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1009.82
+      value: 297.19748
       objectReference: {fileID: 0}
     - target: {fileID: 7524308580068942005, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.0000001866697
       objectReference: {fileID: 0}
     - target: {fileID: 7524308580068942005, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1000
+      value: 1281.6111
       objectReference: {fileID: 0}
     - target: {fileID: 7524308580068942005, guid: ce9dc280c9ca6df4190aa01367b08e74, type: 3}
       propertyPath: m_LocalRotation.w

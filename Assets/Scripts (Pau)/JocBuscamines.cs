@@ -9,7 +9,8 @@ using UnityEditor.SceneManagement;
 
 // Logica de joc del Buscamines PvP per torns (BigBOOM).
 // Afegeix aquest component a un objecte buit (p. ex. "Joc"), arrossega-hi el Taulell i el HUD, i prem Play.
-// Clic esquerre: destapar casella. Clic dret: posar o treure bandera.
+// Clic esquerre: destapar casella. Clic dret (o F): posar o treure bandera.
+// Si s'entra des del menu principal, la mida del mapa i les mines venen del nivell triat (ConfigPartida).
 public class JocBuscamines : MonoBehaviour
 {
     [Header("Referencies (si es deixen buides, es busquen soles)")]
@@ -21,10 +22,14 @@ public class JocBuscamines : MonoBehaviour
     public string nomJugador1 = "PLAYER_1";
     public string nomJugador2 = "PLAYER_2";
 
-    [Header("Mapa")]
+    [Header("Mapa (mida de disseny: el tauler es centra sobre aquesta mida)")]
     public int columnes = 16;
     public int files = 16;
     public int mines = 40;
+    [Tooltip("Centra els taulells mes petits o mes grans sobre la zona de Columnes x Files")]
+    public bool centrarTaulell = true;
+    [Tooltip("Amaga arbres, arbustos, pedres... que quedin a sobre del tauler (per si l'escena no s'ha netejat amb BigBOOM > Preparar escena del mapa)")]
+    public bool amagarDecoracio = true;
 
     [Header("Torns (segons)")]
     public int tornsTotals = 10;
@@ -41,24 +46,32 @@ public class JocBuscamines : MonoBehaviour
     public int puntsPerCasella = 0;
 
     [Header("Controls")]
-    [Tooltip("Desactivat: es pica on hi ha el ratoli. Activat: es pica al centre de la pantalla (mira, 1a persona)")]
+    [Tooltip("Desactivat: es pica on hi ha el ratoli. Activat: es pica al centre de la pantalla (mira, 1a/3a persona)")]
     public bool usarMira = false;
+    [Tooltip("Distancia maxima (m) entre el jugador i la casella per poder-la picar. 0 = sense limit")]
+    public float abast = 0f;
+    [HideInInspector] public Transform jugadorActiu;
 
     [Header("Camera aeria")]
     public bool colocarCamera = true;
+    [Tooltip("Activat: la vista aeria mira el tauler des de dalt, en vertical. Desactivat: des d'un costat (Posicio Camera)")]
+    public bool vistaZenital = true;
+    [Tooltip("Espai lliure al voltant del tauler a la vista zenital (1 = el tauler ocupa tota la pantalla)")]
+    public float margeZenital = 1.2f;
     [Tooltip("Posicio de la camera respecte al centre del tauler. Per defecte des d'un costat (-X): a -Z hi ha l'illa d'espera i a +Z el HUD")]
     public Vector3 posicioCamera = new Vector3(-60f, 50f, 15f);
     [Tooltip("Si no hi ha HUD, alcada del punt on mira la camera. Si hi ha HUD, mira al punt mig entre el tauler i el HUD")]
     public float alturaMirada = 12f;
 
-    [Header("Bandera (opcional: si es buit, se'n crea una de provisional)")]
+    [Header("Bandera (opcional: si es buit, se'n crea una d'animada per codi)")]
     public GameObject prefabBandera;
 
-    enum Estat { Preparacio, Jugant, FiTorn, FiPartida }
+    public enum Estat { Preparacio, Jugant, FiTorn, FiPartida }
     Estat estat = Estat.Preparacio;
 
     // Estat del mapa
     int F, C;
+    int columnesDisseny, filesDisseny;
     bool[,] esMina;
     int[,] num;
     bool[,] oberta;
@@ -67,17 +80,50 @@ public class JocBuscamines : MonoBehaviour
     Transform[] filesObj;
     readonly Dictionary<Transform, Vector2Int> mapa = new Dictionary<Transform, Vector2Int>();
     Bounds limitsTaulell;
+    bool decoracioAmagada = false;
+    int filaInicial = -1, columnaInicial = -1;   // casella des d'on s'obre la zona inicial
 
     // Estat de la partida
     int torn = 0;
     int jugador = 0;            // 0 = jugador 1, 1 = jugador 2
     readonly int[] punts = new int[2];
     int puntsTorn = 0;
+    int nBanderes = 0;
     float tempsRestant = 0f;
+    float duradaFase = 1f;
     bool explotat = false;
     bool netejat = false;
     string textFinal = "";
     bool avisFalten = false;
+    bool hiHaHudJugador = false;
+
+    // ---------- Dades per al HUD i el GestorJugadors ----------
+    public Estat EstatActual { get { return estat; } }
+    public int Torn { get { return Mathf.Clamp(torn, 0, tornsTotals); } }
+    public int JugadorActual { get { return jugador; } }
+    public int PuntsTorn { get { return puntsTorn; } }
+    public float TempsRestant { get { return tempsRestant; } }
+    public float DuradaFase { get { return duradaFase; } }
+    public string TextFinal { get { return textFinal; } }
+    public int Mines { get { return F * C > 0 ? Mathf.Min(mines, F * C) : mines; } }
+    public int Banderes { get { return nBanderes; } }
+    public Bounds LimitsTaulell { get { return limitsTaulell; } }
+    public bool TaulellPreparat { get { return caselles != null && limitsTaulell.size.sqrMagnitude > 0f; } }
+    // Nomes es pot picar si es el torn d'un jugador que es juga des d'aquest ordinador
+    public bool PotPicar { get { return estat == Estat.Jugant && !PauseMenuController.EstaPausat && ConfigPartida.JugadorLocal(jugador); } }
+    public int Punts(int j) { return punts[j]; }
+    public string Nom(int j) { return j == 0 ? nomJugador1 : nomJugador2; }
+    public int FilesActuals { get { return F; } }
+    public int ColumnesActuals { get { return C; } }
+    public bool EsperantRival { get; private set; }
+
+    // Online: aquest ordinador fa de host (decideix el mapa i les fases) o de client (les rep)
+    bool esHost, esClient;
+    float tempsSincronitzacio;
+
+    public event System.Action<Vector3> OnExplosio;
+    public event System.Action<int, int, int, bool> OnTornAcabat;   // punts del torn, banderes bones, dolentes, ha explotat
+    public event System.Action<bool> OnBandera;                     // true = posada, false = treta
 
     // ---------------------------------------------------------------
     void Start()
@@ -86,47 +132,177 @@ public class JocBuscamines : MonoBehaviour
         if (hud == null) hud = FindFirstObjectByType<GeneradorHUD>();
         if (camJoc == null) camJoc = Camera.main;
 
-        if (taulell == null) { Debug.LogError("JocBuscamines: no trobo cap GeneradorTaulell a l'escena."); enabled = false; return; }
+        if (taulell == null) { Debug.LogError("JocBuscamines: no trobo cap GeneradorTaulell a l'escena (esta desactivat?)."); enabled = false; return; }
         if (camJoc == null) { Debug.LogError("JocBuscamines: no hi ha cap camera amb l'etiqueta MainCamera."); enabled = false; return; }
+
+        columnesDisseny = columnes;
+        filesDisseny = files;
+        if (ConfigPartida.Definida)
+        {
+            // Tots els nivells es centren sobre la zona de l'inspector (Columnes x Files)
+            columnes = ConfigPartida.NivellActual.columnes;
+            files = ConfigPartida.NivellActual.files;
+            mines = ConfigPartida.NivellActual.mines;
+        }
+
+        // Noms dels jugadors: els de la partida (online / bot) o el que s'ha escrit al menu principal
+        if (ConfigPartida.NomsPartida != null)
+        {
+            if (!string.IsNullOrEmpty(ConfigPartida.NomsPartida[0])) nomJugador1 = ConfigPartida.NomsPartida[0];
+            if (!string.IsNullOrEmpty(ConfigPartida.NomsPartida[1])) nomJugador2 = ConfigPartida.NomsPartida[1];
+        }
+        else if (!string.IsNullOrEmpty(ConfigPartida.NomJugador1)) nomJugador1 = ConfigPartida.NomJugador1;
+
         if (hud == null) Debug.LogWarning("JocBuscamines: no he trobat el HUD, el joc funcionara igualment pero sense marcador.");
         else hud.PosarNoms(nomJugador1, nomJugador2);
+        hiHaHudJugador = FindFirstObjectByType<HudJugador>() != null;
 
-        StartCoroutine(Partida());
+        esHost = ConfigPartida.Mode == ConfigPartida.ModeJoc.OnlineHost && XarxaBigBOOM.Connectat;
+        esClient = ConfigPartida.Mode == ConfigPartida.ModeJoc.OnlineClient && XarxaBigBOOM.Connectat;
+        if (esHost || esClient) XarxaBigBOOM.Instancia.OnMissatge += AlMissatge;
+
+        // El client no porta la partida: espera els missatges del host
+        if (esClient) XarxaBigBOOM.Instancia.Enviar("LLEST");
+        else StartCoroutine(Partida());
+    }
+
+    void OnDestroy()
+    {
+        if (XarxaBigBOOM.Instancia != null) XarxaBigBOOM.Instancia.OnMissatge -= AlMissatge;
     }
 
     IEnumerator Partida()
     {
+        // Online: no es comenca fins que el rival ha carregat l'escena
+        if (esHost)
+        {
+            EsperantRival = true;
+            while (!XarxaBigBOOM.Instancia.RivalLlest)
+            {
+                if (!XarxaBigBOOM.Connectat) yield break;
+                yield return null;
+            }
+            EsperantRival = false;
+        }
+
         for (torn = 1; torn <= tornsTotals; torn++)
         {
             jugador = (torn - 1) % 2;
-            GenerarMapa();
-            if (torn == 1 && colocarCamera) ColocarCamera();
+            int llavor = taulell.llavor != 0 ? taulell.llavor + torn : new System.Random().Next();
+            ComencarTorn(llavor);
+            if (esHost) Enviar("TORN", torn, jugador, llavor);
 
             // Vista aeria + compte enrere (no es pot picar)
-            estat = Estat.Preparacio;
-            puntsTorn = 0;
-            explotat = false;
-            netejat = false;
-            tempsRestant = tempsVistaAeria + tempsCompteEnrere;
             while (tempsRestant > 0f) { tempsRestant -= Time.deltaTime; yield return null; }
 
             // Torn
             estat = Estat.Jugant;
-            tempsRestant = tempsTorn;
+            tempsRestant = duradaFase = tempsTorn;
+            if (esHost) Enviar("JUGAR");
             while (tempsRestant > 0f && !explotat && !netejat) { tempsRestant -= Time.deltaTime; yield return null; }
             tempsRestant = 0f;
 
             // Fi del torn: es compten les banderes i es mostren les mines
             estat = Estat.FiTorn;
             TancarTorn();
+            if (esHost) Enviar("FITORN", punts[0], punts[1], puntsTorn);
             yield return new WaitForSeconds(tempsFiTorn);
         }
 
+        AcabarPartida();
+        if (esHost) Enviar("FI", punts[0], punts[1]);
+    }
+
+    // Prepara el mapa d'un torn (el host i el client el generen igual amb la mateixa llavor)
+    void ComencarTorn(int llavor)
+    {
+        GenerarMapa(llavor);
+        if (torn == 1 && colocarCamera) ColocarCamera();
+        if (!decoracioAmagada && amagarDecoracio) { AmagarDecoracioSobreTaulell(); decoracioAmagada = true; }
+        estat = Estat.Preparacio;
+        puntsTorn = 0;
+        explotat = false;
+        netejat = false;
+        tempsRestant = duradaFase = tempsVistaAeria + tempsCompteEnrere;
+    }
+
+    void AcabarPartida()
+    {
         estat = Estat.FiPartida;
         if (punts[0] > punts[1]) textFinal = "GUANYA " + nomJugador1;
         else if (punts[1] > punts[0]) textFinal = "GUANYA " + nomJugador2;
         else textFinal = "EMPAT";
         Debug.Log("Fi de la partida: " + textFinal + " (" + punts[0] + " - " + punts[1] + ")");
+    }
+
+    void Enviar(params object[] parts)
+    {
+        if (XarxaBigBOOM.Instancia != null) XarxaBigBOOM.Instancia.Enviar(parts);
+    }
+
+    // ---------- Online ----------
+    void AlMissatge(string[] m)
+    {
+        if (esHost)
+        {
+            // El client demana fer una accio en el seu torn: es valida, s'aplica i es reenvia
+            if (m[0] == "PETICIO" && m.Length >= 4 && estat == Estat.Jugant && !ConfigPartida.JugadorLocal(jugador))
+            {
+                bool destapar = m[1] == "D";
+                int f = XarxaBigBOOM.I(m[2]), c = XarxaBigBOOM.I(m[3]);
+                AplicarAccio(destapar, f, c);
+                Enviar("ACCIO", m[1], f, c);
+            }
+            return;
+        }
+
+        switch (m[0])
+        {
+            case "TORN":
+                torn = XarxaBigBOOM.I(m[1]);
+                jugador = XarxaBigBOOM.I(m[2]);
+                ComencarTorn(XarxaBigBOOM.I(m[3]));
+                break;
+            case "JUGAR":
+                estat = Estat.Jugant;
+                tempsRestant = duradaFase = tempsTorn;
+                break;
+            case "TEMPS":
+                tempsRestant = XarxaBigBOOM.F(m[1]);
+                break;
+            case "ACCIO":
+                AplicarAccio(m[1] == "D", XarxaBigBOOM.I(m[2]), XarxaBigBOOM.I(m[3]));
+                break;
+            case "FITORN":
+                estat = Estat.FiTorn;
+                tempsRestant = 0f;
+                TancarTorn();
+                // els punts bons son els del host
+                punts[0] = XarxaBigBOOM.I(m[1]);
+                punts[1] = XarxaBigBOOM.I(m[2]);
+                puntsTorn = XarxaBigBOOM.I(m[3]);
+                break;
+            case "FI":
+                punts[0] = XarxaBigBOOM.I(m[1]);
+                punts[1] = XarxaBigBOOM.I(m[2]);
+                AcabarPartida();
+                break;
+        }
+    }
+
+    // Accio d'un jugador d'aquest ordinador o del bot. El client nomes l'envia: l'aplica quan el host la confirma
+    public void ExecutarAccio(bool destapar, int f, int c)
+    {
+        if (esClient) { Enviar("PETICIO", destapar ? "D" : "B", f, c); return; }
+        AplicarAccio(destapar, f, c);
+        if (esHost) Enviar("ACCIO", destapar ? "D" : "B", f, c);
+    }
+
+    void AplicarAccio(bool destapar, int f, int c)
+    {
+        if (oberta == null || f < 0 || f >= F || c < 0 || c >= C) return;
+        if (destapar) Destapar(f, c);
+        else CanviarBandera(f, c);
     }
 
     void Update()
@@ -137,30 +313,114 @@ public class JocBuscamines : MonoBehaviour
             hud.ActualitzarHUD(Mathf.Clamp(torn, 0, tornsTotals), nom, tempsRestant, puntsTorn, punts[0], punts[1]);
         }
 
-        if (estat != Estat.Jugant) return;
+        // Online: el host envia el temps cada mig segon; el client el va descomptant mentrestant
+        if (esHost && (estat == Estat.Preparacio || estat == Estat.Jugant) && caselles != null)
+        {
+            tempsSincronitzacio += Time.deltaTime;
+            if (tempsSincronitzacio >= 0.5f) { tempsSincronitzacio = 0f; Enviar("TEMPS", tempsRestant); }
+        }
+        if (esClient && (estat == Estat.Preparacio || estat == Estat.Jugant))
+            tempsRestant = Mathf.Max(0f, tempsRestant - Time.deltaTime);
+
+        if (!PotPicar) return;
         Mouse ratoli = Mouse.current;
-        if (ratoli == null) return;
-        bool esquerre = ratoli.leftButton.wasPressedThisFrame;
-        bool dret = ratoli.rightButton.wasPressedThisFrame;
+        Keyboard teclat = Keyboard.current;
+        bool esquerre = ratoli != null && ratoli.leftButton.wasPressedThisFrame;
+        bool dret = (ratoli != null && ratoli.rightButton.wasPressedThisFrame) || (teclat != null && teclat.fKey.wasPressedThisFrame);
         if (!esquerre && !dret) return;
 
-        Vector2 punt = usarMira ? new Vector2(Screen.width * 0.5f, Screen.height * 0.5f) : ratoli.position.ReadValue();
-        Ray raig = camJoc.ScreenPointToRay(punt);
-        RaycastHit[] cops = Physics.RaycastAll(raig, 1000f);
+        Vector2Int p;
+        Vector3 punt;
+        if (!CasellaApuntada(out p, out punt) || !DinsAbast(punt)) return;
+
+        // El personatge es gira cap a la casella que pica
+        if (jugadorActiu != null)
+        {
+            PlayerController pc = jugadorActiu.GetComponent<PlayerController>();
+            if (pc != null) pc.MirarCap(punt);
+        }
+
+        ExecutarAccio(esquerre, p.y, p.x);
+    }
+
+    // Casella que hi ha sota la mira (o sota el ratoli). p = (columna, fila)
+    public bool CasellaApuntada(out Vector2Int p, out Vector3 punt)
+    {
+        p = Vector2Int.zero;
+        punt = Vector3.zero;
+        if (camJoc == null || caselles == null) return false;
+
+        Vector2 pantalla;
+        if (usarMira) pantalla = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+        else if (Mouse.current != null) pantalla = Mouse.current.position.ReadValue();
+        else return false;
+
+        Ray raig = camJoc.ScreenPointToRay(pantalla);
+        RaycastHit[] cops = Physics.RaycastAll(raig, 1000f, ~0, QueryTriggerInteraction.Ignore);
         System.Array.Sort(cops, (a, b) => a.distance.CompareTo(b.distance));
         foreach (RaycastHit cop in cops)
         {
-            Vector2Int p;
             if (!TrobarCasella(cop.collider.transform, out p)) continue;
-            if (esquerre) Destapar(p.y, p.x);
-            else CanviarBandera(p.y, p.x);
-            break;
+            punt = cop.point;
+            return true;
         }
+        return false;
     }
+
+    public bool DinsAbast(Vector3 punt)
+    {
+        if (abast <= 0f || jugadorActiu == null) return true;
+        Vector3 d = punt - jugadorActiu.position;
+        d.y = 0f;
+        return d.magnitude <= abast;
+    }
+
+    // Centre (a dalt) de la casella on s'ha obert la zona inicial del torn: alla hi apareix el jugador
+    public bool PuntZonaInicial(out Vector3 pos)
+    {
+        pos = limitsTaulell.center;
+        if (!taulell.obrirZonaInicial || caselles == null || filaInicial < 0) return false;
+        Bounds b;
+        if (!LimitsCasella(new Vector2Int(columnaInicial, filaInicial), out b)) return false;
+        pos = new Vector3(b.center.x, b.max.y, b.center.z);
+        return true;
+    }
+
+    // Limits reals de la casella segons els seus colliders. No es fan servir els models: les caselles tapades
+    // amb mina porten la mina a dins, desplacada, i el centre quedaria mogut (i delataria la mina)
+    public bool LimitsCasella(Vector2Int p, out Bounds b)
+    {
+        b = new Bounds();
+        if (caselles == null) return false;
+        GameObject cas = caselles[p.y, p.x];
+        if (cas == null) return false;
+        Collider[] cs = cas.GetComponentsInChildren<Collider>();
+        if (cs.Length == 0)
+        {
+            float m = taulell.mida;
+            b = new Bounds(cas.transform.position + Vector3.up * m * 0.5f, new Vector3(m, m, m));
+            return true;
+        }
+        b = cs[0].bounds;
+        for (int i = 1; i < cs.Length; i++) b.Encapsulate(cs[i].bounds);
+        return true;
+    }
+
+    public float MidaCasella { get { return taulell != null ? taulell.mida : 2f; } }
+
+    public bool EsOberta(Vector2Int p) { return oberta != null && oberta[p.y, p.x]; }
+
+    // El que veu un jugador d'una casella: -1 tapada, -2 mina destapada, 0..8 el numero (el bot nomes fa servir aixo)
+    public int NumeroVisible(int f, int c)
+    {
+        if (oberta == null || !oberta[f, c]) return -1;
+        return esMina[f, c] ? -2 : num[f, c];
+    }
+    public bool TeBandera(Vector2Int p) { return banderes != null && banderes[p.y, p.x] != null; }
 
     void OnGUI()
     {
-        if (!usarMira) return;
+        if (!usarMira || hiHaHudJugador) return;
         GUIStyle st = new GUIStyle(GUI.skin.label) { fontSize = 32, alignment = TextAnchor.MiddleCenter };
         st.normal.textColor = Color.white;
         GUI.Label(new Rect(Screen.width * 0.5f - 25f, Screen.height * 0.5f - 25f, 50f, 50f), "+", st);
@@ -168,14 +428,17 @@ public class JocBuscamines : MonoBehaviour
 
     // ---------------------------------------------------------------
     // Generacio del mapa (mateixes regles que el GeneradorTaulell, pero en temps de joc)
-    void GenerarMapa()
+    void GenerarMapa(int llavor)
     {
         F = files; C = columnes;
         avisFalten = false;
-        System.Random rnd = taulell.llavor == 0 ? new System.Random() : new System.Random(taulell.llavor + torn);
+        nBanderes = 0;
+        System.Random rnd = new System.Random(llavor);
 
         int sf = rnd.Next(1, F - 1);
         int sc = rnd.Next(1, C - 1);
+        filaInicial = sf;
+        columnaInicial = sc;
 
         List<Vector2Int> candidats = new List<Vector2Int>();
         for (int f = 0; f < F; f++)
@@ -220,7 +483,7 @@ public class JocBuscamines : MonoBehaviour
         // Zona inicial oberta (com el primer clic de Google)
         if (taulell.obrirZonaInicial) ObrirCascada(sf, sc, false);
 
-        // Limits del tauler (per a la camera)
+        // Limits del tauler (per a la camera i els spawns)
         Renderer[] rends = taulell.GetComponentsInChildren<Renderer>();
         if (rends.Length > 0)
         {
@@ -260,6 +523,11 @@ public class JocBuscamines : MonoBehaviour
         {
             px = (C - 1) * mida - px;
             pz = (F - 1) * mida - pz;
+        }
+        if (centrarTaulell)
+        {
+            px += (columnesDisseny - C) * mida * 0.5f;
+            pz += (filesDisseny - F) * mida * 0.5f;
         }
         go.transform.localPosition = new Vector3(px, 0f, pz);
         go.transform.localRotation = taulell.girar180 ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
@@ -310,7 +578,10 @@ public class JocBuscamines : MonoBehaviour
             Posar(f, c, true);
             puntsTorn += puntsMina;
             explotat = true;
-            StartCoroutine(Explosio(caselles[f, c] != null ? caselles[f, c].transform.position : Vector3.zero));
+            Vector3 pos = caselles[f, c] != null ? caselles[f, c].transform.position : limitsTaulell.center;
+            EfectesJoc.Pop(caselles[f, c], 0.4f, 0.3f);
+            Explosio(pos);
+            if (OnExplosio != null) OnExplosio(pos);
             return;
         }
 
@@ -348,7 +619,11 @@ public class JocBuscamines : MonoBehaviour
     {
         oberta[f, c] = true;
         Posar(f, c, true);
-        if (sumarPunts) puntsTorn += puntsPerCasella;
+        if (sumarPunts)
+        {
+            puntsTorn += puntsPerCasella;
+            EfectesJoc.Pop(caselles[f, c]);
+        }
     }
 
     void CanviarBandera(int f, int c)
@@ -356,42 +631,33 @@ public class JocBuscamines : MonoBehaviour
         if (oberta[f, c]) return;
         if (banderes[f, c] != null)
         {
-            Destroy(banderes[f, c]);
+            BanderaAnimada ba = banderes[f, c].GetComponent<BanderaAnimada>();
+            if (ba != null) ba.Treure();
+            else Destroy(banderes[f, c]);
             banderes[f, c] = null;
+            nBanderes--;
+            if (OnBandera != null) OnBandera(false);
             return;
         }
-        GameObject cas = caselles[f, c];
-        if (cas == null) return;
+        Bounds b;
+        if (!LimitsCasella(new Vector2Int(c, f), out b)) return;
 
-        Bounds b = new Bounds(cas.transform.position, Vector3.zero);
-        Renderer[] rs = cas.GetComponentsInChildren<Renderer>();
-        if (rs.Length > 0) { b = rs[0].bounds; for (int i = 1; i < rs.Length; i++) b.Encapsulate(rs[i].bounds); }
-
-        GameObject band = prefabBandera != null ? Instantiate(prefabBandera) : CrearBanderaProvisional();
+        GameObject band;
+        if (prefabBandera != null)
+        {
+            band = Instantiate(prefabBandera);
+            band.transform.SetParent(filesObj[f], true);
+        }
+        else
+        {
+            band = BanderaAnimada.Crear(filesObj[f], taulell.mida * 0.55f).gameObject;
+            band.transform.rotation = Quaternion.Euler(0f, Random.Range(-35f, 35f), 0f);
+        }
         band.name = "Bandera_" + (f + 1).ToString("00") + "_" + (c + 1).ToString("00");
-        band.transform.SetParent(filesObj[f], true);
         band.transform.position = new Vector3(b.center.x, b.max.y, b.center.z);
-        if (prefabBandera == null) band.transform.localScale = Vector3.one * (taulell.mida * 0.5f);
         banderes[f, c] = band;
-    }
-
-    GameObject CrearBanderaProvisional()
-    {
-        GameObject arrel = new GameObject("Bandera");
-        GameObject pal = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        Destroy(pal.GetComponent<Collider>());
-        pal.transform.SetParent(arrel.transform, false);
-        pal.transform.localPosition = new Vector3(0f, 0.6f, 0f);
-        pal.transform.localScale = new Vector3(0.08f, 0.6f, 0.08f);
-        pal.GetComponent<Renderer>().material.color = new Color(0.25f, 0.18f, 0.1f);
-
-        GameObject tela = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        Destroy(tela.GetComponent<Collider>());
-        tela.transform.SetParent(arrel.transform, false);
-        tela.transform.localPosition = new Vector3(0.3f, 1.0f, 0f);
-        tela.transform.localScale = new Vector3(0.6f, 0.4f, 0.05f);
-        tela.GetComponent<Renderer>().material.color = new Color(0.83f, 0.18f, 0.18f);
-        return arrel;
+        nBanderes++;
+        if (OnBandera != null) OnBandera(true);
     }
 
     // ---------------------------------------------------------------
@@ -405,44 +671,121 @@ public class JocBuscamines : MonoBehaviour
                 {
                     if (esMina[f, c]) bones++; else dolentes++;
                 }
-                if (esMina[f, c] && !oberta[f, c]) { oberta[f, c] = true; Posar(f, c, true); }   // es mostren totes les mines
+                if (esMina[f, c] && !oberta[f, c])   // es mostren totes les mines
+                {
+                    oberta[f, c] = true;
+                    Posar(f, c, true);
+                    EfectesJoc.Pop(caselles[f, c], 0.5f, 0.3f);
+                }
             }
         puntsTorn += bones * puntsBanderaBona + dolentes * puntsBanderaDolenta;
         punts[jugador] += puntsTorn;
         Debug.Log("Fi del torn " + torn + " (" + (jugador == 0 ? nomJugador1 : nomJugador2) + "): banderes bones " + bones
             + ", dolentes " + dolentes + (explotat ? ", ha explotat" : "") + " -> " + puntsTorn + " punts.");
+        if (OnTornAcabat != null) OnTornAcabat(puntsTorn, bones, dolentes, explotat);
     }
 
-    IEnumerator Explosio(Vector3 pos)
+    void Explosio(Vector3 pos)
     {
-        GameObject bola = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        Destroy(bola.GetComponent<Collider>());
-        bola.name = "Explosio";
-        bola.transform.position = pos + Vector3.up * 0.5f;
-        Renderer r = bola.GetComponent<Renderer>();
-        r.material.color = new Color(1f, 0.55f, 0.1f);
+        CameraJoc cj = camJoc.GetComponent<CameraJoc>();
+        System.Action<float, float> sacsejar;
+        if (cj != null) sacsejar = cj.Sacsejar;
+        else sacsejar = (intensitat, durada) => StartCoroutine(SacsejarCamera(intensitat, durada));
+        EfectesJoc.Explosio(this, pos, taulell.mida * 0.9f, sacsejar);
+    }
 
+    IEnumerator SacsejarCamera(float intensitat, float durada)
+    {
         Vector3 posCam = camJoc.transform.position;
-        float durada = 0.6f;
         for (float t = 0f; t < durada; t += Time.deltaTime)
         {
-            float k = t / durada;
-            bola.transform.localScale = Vector3.one * Mathf.Lerp(0.5f, taulell.mida * 4f, k);
-            r.material.color = Color.Lerp(new Color(1f, 0.85f, 0.2f), new Color(0.3f, 0.3f, 0.3f), k);
-            camJoc.transform.position = posCam + Random.insideUnitSphere * 0.4f * (1f - k);
+            float k = 1f - t / durada;
+            camJoc.transform.position = posCam + Random.insideUnitSphere * intensitat * k * k;
             yield return null;
         }
         camJoc.transform.position = posCam;
-        Destroy(bola);
+    }
+
+    // Posicio i rotacio de la vista aeria
+    public void CalcularVistaAeria(out Vector3 pos, out Quaternion rot)
+    {
+        Vector3 centre = limitsTaulell.center;
+        if (vistaZenital)
+        {
+            // Des de dalt, amb les columnes (eix X) en horitzontal; alcada justa perque hi capiga tot el tauler
+            CameraJoc cj = camJoc.GetComponent<CameraJoc>();
+            float fov = cj != null ? cj.FovBase : camJoc.fieldOfView;
+            float tanV = Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad);
+            float tanH = tanV * Mathf.Max(0.1f, camJoc.aspect);
+            float alcada = Mathf.Max(limitsTaulell.extents.z / tanV, limitsTaulell.extents.x / tanH) * margeZenital;
+            pos = new Vector3(centre.x, limitsTaulell.max.y + alcada, centre.z);
+            rot = Quaternion.LookRotation(Vector3.down, Vector3.forward);
+            return;
+        }
+        Vector3 objectiu = centre + Vector3.up * alturaMirada;
+        if (hud != null && hud.pantalla != null) objectiu = Vector3.Lerp(centre, hud.pantalla.position, 0.5f);
+        pos = centre + posicioCamera;
+        rot = Quaternion.LookRotation(objectiu - pos);
     }
 
     void ColocarCamera()
     {
-        Vector3 centre = limitsTaulell.center;
-        Vector3 objectiu = centre + Vector3.up * alturaMirada;
-        if (hud != null && hud.pantalla != null) objectiu = Vector3.Lerp(centre, hud.pantalla.position, 0.5f);
-        camJoc.transform.position = centre + posicioCamera;
-        camJoc.transform.LookAt(objectiu);
+        Vector3 pos;
+        Quaternion rot;
+        CalcularVistaAeria(out pos, out rot);
+        CameraJoc cj = camJoc.GetComponent<CameraJoc>();
+        if (cj != null)
+        {
+            cj.VistaAeria(pos, rot);
+            cj.SaltarTransicio();
+            return;
+        }
+        camJoc.transform.SetPositionAndRotation(pos, rot);
+    }
+
+    // Versio en temps de joc de "Esborrar decoracio": nomes desactiva el que toca el tauler (els nivells grans en surten)
+    static readonly string[] paraulesDecoracio = { "tree", "bush", "grass", "rock", "flower", "fern", "clover", "pebble",
+        "mushroom", "plant", "pine", "spruce", "oak", "birch", "ash", "stump", "foilage", "foliage" };
+
+    void AmagarDecoracioSobreTaulell()
+    {
+        if (!TaulellPreparat) return;
+        Bounds zona = limitsTaulell;
+        float yTauler = zona.max.y;
+        zona.Expand(new Vector3(4f, 0f, 4f));   // una mica de marge perque res toqui la vora
+        HashSet<Transform> vistos = new HashSet<Transform>();
+        int amagats = 0;
+        foreach (Renderer r in FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+        {
+            Transform arrel = ArrelDecoracio(r.transform);
+            if (arrel == null || !vistos.Add(arrel)) continue;
+            if (arrel.IsChildOf(taulell.transform) || arrel.GetComponentInParent<PlayerController>() != null) continue;
+
+            Renderer[] rs = arrel.GetComponentsInChildren<Renderer>();
+            Bounds b = rs[0].bounds;
+            for (int i = 1; i < rs.Length; i++) b.Encapsulate(rs[i].bounds);
+            if (b.size.x > 25f || b.size.z > 25f) continue;
+            if (b.min.y > yTauler + 20f || b.max.y < yTauler - 3f) continue;
+            if (b.max.x < zona.min.x || b.min.x > zona.max.x || b.max.z < zona.min.z || b.min.z > zona.max.z) continue;
+            arrel.gameObject.SetActive(false);
+            amagats++;
+        }
+        if (amagats > 0) Debug.Log("JocBuscamines: " + amagats + " elements de decoracio amagats perque tocaven el tauler.");
+    }
+
+    // L'avantpassat mes alt que te nom de decoracio (arbre, arbust, pedra...), o null si no n'es
+    static Transform ArrelDecoracio(Transform t)
+    {
+        Transform trobat = null;
+        while (t != null)
+        {
+            string n = t.name.ToLower();
+            if (n.Contains("illa") || n.Contains("escenari") || n.Contains("taulell") || n.Contains("casella")) break;
+            foreach (string p in paraulesDecoracio)
+                if (n.Contains(p)) { trobat = t; break; }
+            t = t.parent;
+        }
+        return trobat;
     }
 
 #if UNITY_EDITOR
